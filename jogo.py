@@ -24,6 +24,21 @@ def atualizar_tabuleiro(tabuleiro, linha, coluna, jogador):
     return False
 
 
+def verificar_estado(tabuleiro):
+    for i in range(3):
+        if tabuleiro[i][0] == tabuleiro[i][1] == tabuleiro[i][2] and tabuleiro[i][0] != ' ':
+            return True
+    for i in range(3):
+        if tabuleiro[0][i] == tabuleiro[1][i] == tabuleiro[2][i] and tabuleiro[0][i] != ' ':
+            return True
+    if tabuleiro[0][0] == tabuleiro[1][1] == tabuleiro[2][2] and tabuleiro[0][0] != ' ':
+        return True
+    if tabuleiro[0][2] == tabuleiro[1][1] == tabuleiro[2][0] and tabuleiro[0][2] != ' ':
+        return True
+    return False
+
+
+
 def verificar_estado_ia(model, tabuleiro):
     tabuleiro_flat = np.array(tabuleiro).flatten()
 
@@ -44,7 +59,7 @@ def jogada_maquina(tabuleiro):
         tabuleiro[linha][coluna] = 'O'
 
 
-def jogar_jogo(model):
+def jogar_jogo(model, n_jogadas):
     tabuleiro = inicializar_tabuleiro()
     mostrar_tabuleiro(tabuleiro)
     while True:
@@ -55,22 +70,38 @@ def jogar_jogo(model):
             print("Posição já ocupada, tente novamente.")
             continue
 
-        estado = verificar_estado_ia(model, tabuleiro)
+        n_jogadas += 1
+        estado_ia = verificar_estado_ia(model, tabuleiro)
+        estado = verificar_estado(tabuleiro)
         mostrar_tabuleiro(tabuleiro)
-        if estado == "positive":
+        if estado_ia == "positive":
+            print("Previsão do modelo: ")
+            print("X venceu")
+        elif estado_ia == "tie":
+            print("Previsão do modelo: ")
+            print("empate")
+
+        if estado:
+            print("Estado real do jogo: ")
             print("Jogador X venceu!")
             break
-        elif estado == "tie":
+        elif n_jogadas == 5:
+            print("Estado real do jogo: ")
             print("O jogo terminou em empate!")
             break
 
         jogada_maquina(tabuleiro)
-
-        estado = verificar_estado_ia(model, tabuleiro)
+        estado_ia = verificar_estado_ia(model, tabuleiro)
+        estado = verificar_estado(tabuleiro)
         mostrar_tabuleiro(tabuleiro)
-        if estado == "negative":
+        if estado_ia == "negative":
+            print("Previsão do modelo: ")
+            print("O venceu")
+        elif estado_ia == "tie":
+            print("Previsão do modelo: ")
+            print("empate")
+
+        if estado:
+            print("Estado real do jogo: ")
             print("Jogador O (máquina) venceu!")
-            break
-        elif estado == "tie":
-            print("O jogo terminou em empate!")
             break

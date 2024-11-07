@@ -39,7 +39,8 @@ def classificar(i, jogar):
 
     print(f"\n{nome}: \nAcurácia: {accuracy},\nPrecisão: {precision},\nRecall: {recall},\nF1-Score: {f1}.")
     if jogar:
-        jogar_jogo(classifier)
+        n_jogadas = 0
+        jogar_jogo(classifier, n_jogadas)
     return 1
 
 
