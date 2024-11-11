@@ -17,6 +17,18 @@ def mostrar_tabuleiro(tabuleiro):
     print('\n')
 
 
+def escolher_dificuldade():
+    while True:
+        try:
+            escolha = int(input("Escolha o nível de dificuldade (1: Fácil, 2: Médio, 3: Difícil): "))
+            if escolha in [1, 2, 3]:
+                return escolha
+            else:
+                print("Escolha inválida. Tente novamente.")
+        except ValueError:
+            print("Escolha inválida. Tente novamente.")
+
+
 def escolher_simbolo():
     while True:
         escolha = input("Escolha seu símbolo (X/O): ").upper()
@@ -83,28 +95,44 @@ def minimax(tabuleiro, profundidade, is_maximizing, jogador_ia, jogador_humano):
         return melhor_pontuacao
 
 
-def jogada_maquina(tabuleiro, jogador_ia, jogador_humano):
-    melhor_pontuacao = float('inf')
-    melhor_jogada = None
+def jogada_maquina(tabuleiro, jogador_ia, jogador_humano, dificuldade):
+    usar_minimax = False
 
-    for i in range(3):
-        for j in range(3):
-            if tabuleiro[i][j] == ' ':
-                tabuleiro[i][j] = jogador_ia
-                pontuacao = minimax(tabuleiro, 0, True, jogador_ia, jogador_humano)
-                tabuleiro[i][j] = ' '
-                if pontuacao < melhor_pontuacao:
-                    melhor_pontuacao = pontuacao
-                    melhor_jogada = (i, j)
+    if dificuldade == 1:
+        usar_minimax = random.random() < 0.25
+    elif dificuldade == 2:
+        usar_minimax = random.random() < 0.50
+    elif dificuldade == 3:
+        usar_minimax = True
 
-    if melhor_jogada:
-        linha, coluna = melhor_jogada
-        tabuleiro[linha][coluna] = jogador_ia
+    if usar_minimax:
+        melhor_pontuacao = float('inf')
+        melhor_jogada = None
+
+        for i in range(3):
+            for j in range(3):
+                if tabuleiro[i][j] == ' ':
+                    tabuleiro[i][j] = jogador_ia
+                    pontuacao = minimax(tabuleiro, 0, True, jogador_ia, jogador_humano)
+                    tabuleiro[i][j] = ' '
+                    if pontuacao < melhor_pontuacao:
+                        melhor_pontuacao = pontuacao
+                        melhor_jogada = (i, j)
+
+        if melhor_jogada:
+            linha, coluna = melhor_jogada
+            tabuleiro[linha][coluna] = jogador_ia
+    else:
+        jogadas_possiveis = [(i, j) for i in range(3) for j in range(3) if tabuleiro[i][j] == ' ']
+        if jogadas_possiveis:
+            linha, coluna = random.choice(jogadas_possiveis)
+            tabuleiro[linha][coluna] = jogador_ia
 
 
 def jogar_jogo(model):
     tabuleiro = inicializar_tabuleiro()
     jogador_escolha = escolher_simbolo()
+    dificuldade = escolher_dificuldade()
     jogador_ia = 'O' if jogador_escolha == 'X' else 'X'
     jogador_humano = jogador_escolha
     turno_jogador = jogador_humano == 'X'
@@ -148,7 +176,7 @@ def jogar_jogo(model):
                 print("O jogo terminou em empate!")
                 break
         else:
-            jogada_maquina(tabuleiro, jogador_ia, jogador_humano)
+            jogada_maquina(tabuleiro, jogador_ia, jogador_humano, dificuldade)
             n_jogadas += 1
             estado_ia = verificar_estado_ia(model, tabuleiro)
             estado = verificar_estado(tabuleiro)
